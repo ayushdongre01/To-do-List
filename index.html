@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do List App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: rgb(4, 4, 4);
+      position: relative;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    /* Fullscreen background animation */
+    @keyframes moveBackground {
+      0% {
+        background-position: 0 0;
+      }
+      100% {
+        background-position: 100% 100%;
+      }
+    }
+
+    .background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, #87CEEB, #90EE90, #FFD700, #D8B2D1);
+      background-size: 400% 400%;
+      animation: moveBackground 10s ease infinite;
+      z-index: -1;
+    }
+
+    h1 {
+      color: #cebaba;
+      z-index: 1;
+    }
+
+    .container {
+      width: 50%;
+      margin-top: 20px;
+      z-index: 1;
+    }
+
+    input {
+      padding: 10px;
+      width: 80%;
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 10px;
+      background-color: #bb70b8;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.3s ease;
+    }
+
+    button:hover {
+      transform: scale(1.1);
+      background-color: #a15da4;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      background: #ffffff;
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(-10px);
+      animation: fadeIn 0.5s forwards;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+    }
+
+    /* Cloud animation */
+    .cloud {
+      position: absolute;
+      width: 200px;
+      height: 100px;
+      background: #fff;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: cloudMove 20s linear infinite;
+    }
+
+    .cloud:nth-child(1) {
+      top: 20%;
+      animation-duration: 25s;
+      animation-delay: 5s;
+    }
+
+    .cloud:nth-child(2) {
+      top: 40%;
+      animation-duration: 18s;
+      animation-delay: 3s;
+    }
+
+    .cloud:nth-child(3) {
+      top: 60%;
+      animation-duration: 22s;
+      animation-delay: 7s;
+    }
+
+    @keyframes cloudMove {
+      0% {
+        left: -250px;
+      }
+      100% {
+        left: 100%;
+      }
+    }
+
+    /* Rain animation */
+    .raindrop {
+      position: absolute;
+      width: 2px;
+      height: 10px;
+      background-color: #00f;
+      animation: rainFall linear infinite;
+    }
+
+    @keyframes rainFall {
+      0% {
+        transform: translateY(-100vh);
+      }
+      100% {
+        transform: translateY(100vh);
+      }
+    }
+
+    /* Snow animation */
+    .snowflake {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background-color: #fff;
+      border-radius: 50%;
+      animation: snowFall linear infinite;
+    }
+
+    @keyframes snowFall {
+      0% {
+        transform: translateY(-100vh);
+      }
+      100% {
+        transform: translateY(100vh);
+      }
+    }
+
+    /* Sunlight effect */
+    .sunlight {
+      position: absolute;
+      top: 20%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 0, 0.4);
+      opacity: 0;
+      animation: sunlightEffect 10s ease-in-out infinite;
+    }
+
+    @keyframes sunlightEffect {
+      0%, 33% {
+        opacity: 0;
+      }
+      34%, 66% {
+        opacity: 0.4;
+      }
+      67%, 100% {
+        opacity: 0;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="background"></div>
+  <div class="sunlight"></div> <!-- Sunlight effect -->
+  
+  <!-- Cartoon clouds moving -->
+  <div class="cloud"></div>
+  <div class="cloud"></div>
+  <div class="cloud"></div>
+
+  <!-- Initially show raindrops -->
+  <div id="weather"></div>
+
+  <h1>To-Do List</h1>
+  <div class="container">
+    <input type="text" id="taskInput" placeholder="Enter a new task">
+    <button onclick="addTask()">Add Task</button>
+    <ul id="taskList"></ul>
+  </div>
+
+  <script>
+    const backendUrl = 'http://localhost:3000';
+
+    // Create rain animation
+    function createRain() {
+      const weatherDiv = document.getElementById('weather');
+      weatherDiv.innerHTML = '';
+      for (let i = 0; i < 100; i++) {
+        const raindrop = document.createElement('div');
+        raindrop.classList.add('raindrop');
+        raindrop.style.left = `${Math.random() * 100}%`;
+        raindrop.style.animationDuration = `${Math.random() * 1 + 1}s`; // Randomize speed
+        weatherDiv.appendChild(raindrop);
+      }
+    }
+
+    // Create snow animation
+    function createSnow() {
+      const weatherDiv = document.getElementById('weather');
+      weatherDiv.innerHTML = '';
+      for (let i = 0; i < 100; i++) {
+        const snowflake = document.createElement('div');
+        snowflake.classList.add('snowflake');
+        snowflake.style.left = `${Math.random() * 100}%`;
+        snowflake.style.animationDuration = `${Math.random() * 5 + 5}s`; // Randomize speed
+        weatherDiv.appendChild(snowflake);
+      }
+    }
+
+    // Create sunlight effect
+    function createSunlight() {
+      const sunlightDiv = document.querySelector('.sunlight');
+      sunlightDiv.style.animation = 'sunlightEffect 10s ease-in-out infinite';
+    }
+
+    // Start the weather cycle
+    function startWeatherCycle() {
+      createRain();
+      setTimeout(() => {
+        createSnow();
+      }, 15000); // Snow after 15 seconds of rain
+
+      setTimeout(() => {
+        createSunlight();
+      }, 30000); // Sunlight after 15 seconds of snow
+
+      setTimeout(() => {
+        startWeatherCycle();
+      }, 45000); // Restart the cycle after 45 seconds
+    }
+
+    // Initial weather cycle start
+    startWeatherCycle();
+
+    async function fetchTasks() {
+      const response = await fetch(`${backendUrl}/tasks`);
+      const tasks = await response.json();
+      const taskList = document.getElementById('taskList');
+      taskList.innerHTML = '';
+      tasks.forEach((task, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `${task} <button onclick="removeTask(${index})">Remove</button>`;
+        taskList.appendChild(li);
+      });
+    }
+
+    async function addTask() {
+      const taskInput = document.getElementById('taskInput');
+      const task = taskInput.value;
+      if (!task) return alert('Task cannot be empty!');
+      await fetch(`${backendUrl}/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task })
+      });
+      taskInput.value = '';
+      fetchTasks();
+    }
+
+    async function removeTask(index) {
+      await fetch(`${backendUrl}/tasks/${index}`, {
+        method: 'DELETE',
+      });
+      fetchTasks();
+    }
+
+    fetchTasks();
+  </script>
+</body>
+</html>
